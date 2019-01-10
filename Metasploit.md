@@ -260,7 +260,7 @@ The concept of dividing a large network into smaller, identifiable parts. Subnet
 
 ### Netmask
 
-A 32-bit mask used to divide an IP address into subnets and specify the network's available hosts.
+A 32-bit mask used to divide an IP address into subnets and specify the network's available hosts. An example of a netmask is 10.10.10.1**/24**. This means the network is from 10.10.10.0 -> 10.10.10.255 due to the 24-bit mask (0xFF 0xFF 0xFF 0x00).
 
 ### Gateway
 
