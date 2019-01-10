@@ -61,4 +61,7 @@ ps -ax | grep nginx
 # References
 
 * Beginner's guide: http://nginx.org/en/docs/beginners_guide.html
+* Documentation: http://nginx.org/en/docs/
+  * Directives: http://nginx.org/en/docs/dirindex.html
+  * Variables: http://nginx.org/en/docs/varindex.html
 
