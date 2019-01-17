@@ -181,32 +181,54 @@ The following commands are all within the `meterpreter > <command> `context. Som
 
 * `background` : Background the current session
 * `getuid` : Return the current username of the target machine
+* `getsid`: Return the SID of the user that the target is running as
+* `getprivs`:  Attempt to enable all privileges available to the current process
 * `getpid` : Return the process ID in which Meterpreter is currently running
-* `ps`: List all the running processes on the target machine
+* `pgrep` : Filter processes by name
+  * Ex: `pgrep notepad.exe`
+* `ps [options] PATTERN`: List all the running processes on the target machine. Available options ...
+  * **-A *\<TERM>*** filter on architecture
+  * **-S *\<TERM>*** filter on process name
+  * **-U *\<TERM>*** filter on username
+  * **-c** filter child processes of the current shell
+  * **-h** display help menu
+  * **-s** filter system processes
+  * **-x** Filter exact matches rather than regex pattern
+* `kill <PID>`:  Terminate one or more processes using their PID
+* `pkill <PNAME>`: Terminate a process by name
+  * Ex: `pkill calc.exe`
 * `sysinfo` : List the target system's information, such as OS, architecture, etc.
+* `execute <CMD>`: 
+  * [Example](#example-execute-command)
 * `shell` : Provide a shell prompt for the target's machine
 * `exit` : Terminate a Meterpreter session
 * `?` : List all available Meterpreter commands
+
+<a name="example-execute-command"></a>
+
+####  Use `execute` to run `mimikatz` directly in memory
+
+To be filled ...
 
 ### Filesystem commands
 
 Commands for exploring the target system and performing various tasks such as: searching for files, downloading files, and changing the directory.
 
 * `pwd` Return the present working directory
-* `cd <location>` : Change working directory to location
+* `cd <LOCATION>` : Change working directory to location
 * `ls`: List files in the current directory
 * `search` : Search for specific files and file types
   * Ex: `search -f *.doc -d c:\`will search for all files in the C: drive with a .doc file extension
     * **-f** to specify the file pattern to search for
     * **-d** to specify which directory to perform a recursive search
-* `download` : Download a file from the target's machine
+* `download <FILE>` : Download a file from the target's machine
   * Ex: `download C:\\Users\\Public\\Desktop\\secrets.docx`
     * Note the required double slashes when specifying a Windows path
-* `upload` :  Upload any file to the target's machine
+* `upload <FILE>` :  Upload any file to the target's machine
   * Ex: `upload file.exe`
-* `rm` : Remove a file or directory from the target's machine
+* `rm <FILE>` : Remove a file or directory from the target's machine
   * Ex: `rm file.exe`
-* `edit` : Edit files on the target's machine using the `vim` editor
+* `edit <FILE>` : Edit files on the target's machine using the `vim` editor
   * Ex: `edit root.txt`
 * `show_mount` : List all mount points/logical drives
 * `help File system commands` : List all file system commands
@@ -220,13 +242,22 @@ Commands for understanding the network structure of the target's system, such as
 * `ipconfig/ifconfig` : Display network interfaces and IP configurations
 * `netstat` : Display network connections
 * `portfwd` :  Forward incoming TCP/UDP connections to remote hosts
-  * Ex:
-* `route` : 
+  * Simple Example: Three hosts: A (attacker), B (target), C (host on target's network). Host A is directly connected to Host B and Host B is directly connected to Host C. Host A wants to connect to Host C, but it's not possible because there's no direct connection from A to C, so Host A uses Host B to connect to Host C. In other words, Host B is doing port forwarding to allow for Host A to "directly connect" to Host C.
+    * Technical Details: Host B has a TCP listener on one of its ports, e.g. port 4545. Host C also has a listener used to connect to Host B when a packet arrives from port 4545. If Host A sends any packet on port 4545 of Host B, it'll automatically be forwarded to Host C. Therefore Host B is port forwarding its packets to Host C.
+  * Ex: `portfwd -a -L 127.0.0.1 -l 5544 -h 10.10.10.1 -p 4545`
+    * **-L** defines the IP to bind a forwarded socket to
+    * **-l** port number to be opened on Host A for accepting incoming connections
+    * **-h**  defines the IP address of Host C, or any other host within the internal network of the target's machine
+    * **-p** is the port to connect to on Host C (e.g. port 4545)
+* `route` :  Display or modify the IP routing table on the target machine
+  * Type `route -h` to display the help menu and list supported commands
 * `help networking` : List all networking commands
 
 ------
 
 # Key Terms
+
+List of terms along with my corresponding understanding of their meanings. Some terms include more information as they're more obscure/lesser known to me.
 
 ## Shells
 
@@ -270,9 +301,13 @@ Specifies the forwarding, or the next hop, IP address over which the set of addr
 
 # Appendix
 
+List of acronyms along with my corresponding understanding of their meanings. Some terms include more information as they're more obscure/lesser known to me.
+
 * msf : Metasploit Framework
-* XML : 
 * nmap : 
+* PID : Process identifier
+* SID : Security identifier, or security ID. A number used to identify user, group, and computer accounts in Windows. SIDs are created when the account is first created on a Windows machine. No two SIDs are the same on a Windows machine.
 * TLS :
 * TLV :
 * vim : 
+* XML : 
